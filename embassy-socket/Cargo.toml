@@ -7,7 +7,7 @@ readme = "Readme.md"
 authors = ["embassy-plus developers"]
 license = "MIT/Apache-2.0"
 categories = ["embedded"]
-repository = "https://github.com/lifeRobot/embassy-plus"
+repository = "https://github.com/lifeRobot/embassy-plus/tree/main/embassy-socket"
 
 [dependencies]
 # only ipv4 is supported for the time being

@@ -2,6 +2,12 @@
 name = "embassy-rp-plus"
 version = "0.1.0"
 edition = "2024"
+description = "embassy rp plus interface"
+readme = "Readme.md"
+authors = ["embassy-plus developers"]
+license = "MIT/Apache-2.0"
+categories = ["embedded"]
+repository = "https://github.com/lifeRobot/embassy-plus/tree/main/embassy-rp-plus"
 
 [dependencies]
 embassy-executor = { version = "0.7.0", optional = true }
