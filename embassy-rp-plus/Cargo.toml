@@ -1,0 +1,20 @@
+[package]
+name = "embassy-rp-plus"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+embassy-executor = { version = "0.7.0", optional = true }
+embassy-rp = { version = "0.4.0", features = ["time-driver", "critical-section-impl"] }
+
+# usb logger support
+embassy-usb-logger = { version = "0.4.0", optional = true }
+log = { version = "0.4.25", optional = true }
+
+[features]
+# support rp
+rp2040 = ["embassy-rp/rp2040"]
+rp235xa = ["embassy-rp/rp235xa"]
+rp235xb = ["embassy-rp/rp235xb"]
+
+usb_log = ["embassy-usb-logger", "log", "embassy-executor"]

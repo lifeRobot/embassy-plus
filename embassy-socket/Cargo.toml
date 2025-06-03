@@ -1,0 +1,18 @@
+[package]
+name = "embassy-socket"
+version = "0.1.0"
+edition = "2024"
+description = "tcp client/server callback"
+readme = "Readme.md"
+authors = ["embassy-plus developers"]
+license = "MIT/Apache-2.0"
+categories = ["embedded"]
+repository = "https://github.com/lifeRobot/embassy-plus"
+
+[dependencies]
+# only ipv4 is supported for the time being
+embassy-net = { version = "0.7.0", features = ["tcp", "proto-ipv4", "medium-ethernet"] }
+embassy-time = "0.4.0"
+embassy-sync = "0.7.0"
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
