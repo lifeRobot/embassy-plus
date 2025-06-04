@@ -41,9 +41,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
 /// support drop
 impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize> Drop for TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE> {
     fn drop(&mut self) {
-        unsafe {
-            self.socket.close();
-            self.state.pool.free(self.bufs);
-        }
+        self.socket.close();
+        self.state.pool.free(self.bufs);
     }
 }

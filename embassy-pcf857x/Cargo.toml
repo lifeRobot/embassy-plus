@@ -15,3 +15,8 @@ embassy-sync = "0.7.0"
 
 [features]
 rp = ["embassy-rp"]
+# this is for compilation and document generation. It is not recommended to use
+_rp2040 = ["embassy-rp/rp2040"]
+
+[package.metadata.docs.rs]
+features = ["_rp2040"]

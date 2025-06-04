@@ -1,5 +1,4 @@
 use embassy_net::tcp;
-use embassy_net::tcp::ConnectError;
 use embassy_sync::channel::TryReceiveError;
 
 /// socket result
@@ -13,7 +12,19 @@ pub enum SocketErr {
     /// tcp connect error
     ConnectError(tcp::ConnectError),
     /// try receive error
-    TryReceiveError(TryReceiveError)
+    TryReceiveError(TryReceiveError),
+    /// tcp accept error
+    AcceptError(tcp::AcceptError),
+}
+
+/// custom method
+impl SocketErr {
+    /// not route<br />
+    /// more see [tcp::ConnectError::NoRoute]
+    #[inline]
+    pub fn no_route() -> Self {
+        Self::ConnectError(tcp::ConnectError::NoRoute)
+    }
 }
 
 /// support tcp::error to socket err
@@ -26,14 +37,24 @@ impl From<tcp::Error> for SocketErr {
 
 /// support tcp::connectError to socket err
 impl From<tcp::ConnectError> for SocketErr {
-    fn from(value: ConnectError) -> Self {
+    #[inline]
+    fn from(value: tcp::ConnectError) -> Self {
         Self::ConnectError(value)
     }
 }
 
 /// support TryReceiveError to socket err
 impl From<TryReceiveError> for SocketErr {
+    #[inline]
     fn from(value: TryReceiveError) -> Self {
         Self::TryReceiveError(value)
+    }
+}
+
+/// support accept error to socket err
+impl From<tcp::AcceptError> for SocketErr {
+    #[inline]
+    fn from(value: tcp::AcceptError) -> Self {
+        Self::AcceptError(value)
     }
 }
