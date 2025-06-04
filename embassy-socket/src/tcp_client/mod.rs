@@ -32,7 +32,7 @@ pub struct TcpClient<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize,
 impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpClientCallBack> TcpClient<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {
     /// create tcp client
     #[inline]
-    pub fn new(stack: Stack<'static>, ip: Ipv4Addr, port: u16, cb: CB, state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>) -> Self {
+    pub fn new(stack: Stack<'d>, ip: Ipv4Addr, port: u16, cb: CB, state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>) -> Self {
         Self { stack, state, socket_timeout: None, read_timeout: Duration::from_millis(100), ip, port, cb }
     }
 
