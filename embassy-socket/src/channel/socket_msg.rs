@@ -7,6 +7,14 @@ pub struct SocketMsg<const N: usize> {
     pub(crate) len: usize,
 }
 
+/// support default
+impl<const N: usize> Default for SocketMsg<N> {
+    #[inline]
+    fn default() -> Self {
+        Self::new([0; N], 0)
+    }
+}
+
 /// custom method
 impl<const N: usize> SocketMsg<N> {
     /// create socket msg

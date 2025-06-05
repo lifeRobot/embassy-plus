@@ -1,0 +1,11 @@
+[package]
+name = "embassy-utils"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+embassy-rp-plus = { path = "../embassy-rp-plus", optional = true }
+
+[features]
+rp = ["embassy-rp-plus"]
+_rp2040 = ["embassy-rp-plus/rp2040"]
