@@ -2,7 +2,7 @@ use core::cell::{Cell, UnsafeCell};
 use core::mem::MaybeUninit;
 use core::ptr::NonNull;
 
-/// socket pool
+/// socket memory pool
 pub struct Pool<T, const N: usize> {
     /// is this memory already used?
     used: [Cell<bool>; N],
@@ -15,6 +15,7 @@ impl<T, const N: usize> Pool<T, N> {
     const VALUE: Cell<bool> = Cell::new(false);
     const UNINIT: UnsafeCell<MaybeUninit<T>> = UnsafeCell::new(MaybeUninit::uninit());
 
+    /// create a memory pool
     pub const fn new() -> Self {
         Self {
             used: [Self::VALUE; N],
@@ -22,6 +23,7 @@ impl<T, const N: usize> Pool<T, N> {
         }
     }
 
+    /// alloc memory
     pub fn alloc(&self) -> Option<NonNull<T>> {
         for n in 0..N {
             // this can't race because Pool is not Sync.

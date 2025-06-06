@@ -8,7 +8,6 @@ use crate::err::{SocketErr, SocketResult};
 use crate::tcp_server::callback::TcpServerCallBack;
 
 /// single tcp server runner
-#[derive(Copy, Clone)]
 pub struct TcpServerRunner<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpServerCallBack> {
     /// tcp stack
     stack: Stack<'d>,
@@ -24,8 +23,29 @@ pub struct TcpServerRunner<'d, const N: usize, const TX_SZ: usize, const RX_SZ: 
     pub cb: &'d CB,
 }
 
+/// runner support Clone
+impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpServerCallBack> Clone for
+TcpServerRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {
+    #[inline]
+    fn clone(&self) -> Self {
+        Self {
+            stack: self.stack,
+            state: self.state,
+            port: self.port,
+            socket_timeout: self.socket_timeout,
+            read_timeout: self.read_timeout,
+            cb: self.cb,
+        }
+    }
+}
+
+/// runner support Copy
+impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpServerCallBack> Copy for
+TcpServerRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {}
+
 /// custom method
-impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpServerCallBack> TcpServerRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {
+impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpServerCallBack>
+TcpServerRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {
     /// create one runner
     #[inline]
     pub fn new(stack: Stack<'d>, state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>, port: u16, cb: &'d CB) -> Self {
@@ -47,41 +67,46 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
     }
 
     /// run tcp server
-    pub async fn run<const CN: usize>(&self, wch: &WriteChannel<'_, CN>) {
+    pub async fn run<const CN: usize>(&self, wch: &WriteChannel<'_, CN>, t: &mut CB::T) {
         loop {
-            if let Err(e) = self.run_logic(wch).await {
-                self.cb.err(e).await;
+            if let Err(e) = self.run_logic(wch, t).await {
+                self.cb.err(e, t).await;
             }
         }
     }
 
     /// run logic
-    async fn run_logic<const CN: usize>(&self, wch: &WriteChannel<'_, CN>) -> SocketResult<()> {
+    async fn run_logic<const CN: usize>(&self, wch: &WriteChannel<'_, CN>, t: &mut CB::T) -> SocketResult<()> {
         let mut conn = self.try_accept().await?;
         let endpoint = conn.socket.remote_endpoint().ok_or_else(SocketErr::no_route)?;
 
         wch.enable().await;
-        self.cb.conn(endpoint, wch).await;
-        while !self.read_logic(&mut conn, endpoint, wch).await {}
+        self.cb.conn(endpoint, wch, t).await;
+        while !self.read_logic(&mut conn, endpoint, wch, t).await {}
         wch.disable().await;
-        self.cb.dis_conn(endpoint).await;
+        self.cb.dis_conn(endpoint, t).await;
         Ok(())
     }
 
     /// read logic
-    async fn read_logic<const CN: usize>(&self, conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>, endpoint: IpEndpoint, wch: &WriteChannel<'_, CN>) -> bool {
+    async fn read_logic<const CN: usize>(
+        &self,
+        conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>,
+        endpoint: IpEndpoint,
+        wch: &WriteChannel<'_, CN>,
+        t: &mut CB::T) -> bool {
         if !conn.socket.can_recv() {
-            if let Err(e) = self.write_logic(conn, wch).await { self.cb.err(e).await; }
+            if let Err(e) = self.write_logic(conn, wch).await { self.cb.err(e, t).await; }
             return matches!(conn.socket.state(), State::CloseWait|State::Closed);
         }
 
         match conn.try_read().await {
             Ok(bytes) => {
-                self.cb.recv(endpoint, bytes, wch).await;
+                self.cb.recv(endpoint, bytes, wch, t).await;
                 false
             }
             Err(e) => {
-                self.cb.err(e.into()).await;
+                self.cb.err(e.into(), t).await;
                 true
             }
         }

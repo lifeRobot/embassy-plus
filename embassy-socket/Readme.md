@@ -56,8 +56,8 @@ Cargo.toml file :
 
 ```toml
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
-embassy-rp-plus = { version = "0.1.0", features = ["rp2040", "usb_log"] }
-embassy-socket = { version = "0.1.1" }
+embassy-rp-plus = { version = "0.1.1", features = ["rp2040", "usb_log"] }
+embassy-socket = { version = "0.1.2" }
 static_cell = "2.1.0"
 portable-atomic = { version = "1.11.0", features = ["critical-section"] }
 rand_core = { version = "0.6.4", default-features = false }
@@ -299,7 +299,7 @@ async fn main(spawner: Spawner) {
 /// listen on up to 3 connections
 #[embassy_executor::task(pool_size = 3)]
 async fn tcp_server_run(tcp_server: TcpServerRunner<'static, 3, 1024, 1024, 1024, CB>, wch: &'static WriteChannel<'static, 1024>) {
-    tcp_server.run(wch).await;
+    tcp_server.run(wch, &mut ()).await;
 }
 
 /// run eth task
@@ -321,21 +321,23 @@ struct CB;
 
 /// tcp client callback business
 impl TcpServerCallBack for CB {
-    async fn conn<const CN: usize>(&self, endpoint: IpEndpoint, wch: &WriteChannel<'_, CN>) {
+    type T = ();
+
+    async fn conn<const CN: usize>(&self, endpoint: IpEndpoint, wch: &WriteChannel<'_, CN>, _t: &mut ()) {
         log::info!("conn, endpoint: {endpoint:?}");
         wch.send_str("conn").await;
     }
 
-    async fn dis_conn(&self, endpoint: IpEndpoint) {
+    async fn dis_conn(&self, endpoint: IpEndpoint, _t: &mut ()) {
         log::info!("dis conn, endpoint: {endpoint:?}");
     }
 
-    async fn recv<const CN: usize>(&self, endpoint: IpEndpoint, buf: &[u8], wch: &WriteChannel<'_, CN>) {
+    async fn recv<const CN: usize>(&self, endpoint: IpEndpoint, buf: &[u8], wch: &WriteChannel<'_, CN>, _t: &mut ()) {
         log::info!("endpoint[{endpoint:?}] recv buf is {buf:?}");
         wch.send_bytes(buf).await;
     }
 
-    async fn err(&self, err: SocketErr) {
+    async fn err(&self, err: SocketErr, _t: &mut ()) {
         log::info!("socket error: {err:?}");
     }
 }

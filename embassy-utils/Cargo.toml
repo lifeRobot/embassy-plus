@@ -2,10 +2,22 @@
 name = "embassy-utils"
 version = "0.1.0"
 edition = "2024"
+description = "embassy plus utils"
+readme = "Readme.md"
+authors = ["embassy-plus developers"]
+license = "MIT/Apache-2.0"
+categories = ["embedded"]
+repository = "https://github.com/lifeRobot/embassy-plus/tree/main/embassy-utils"
 
 [dependencies]
-embassy-rp-plus = { path = "../embassy-rp-plus", optional = true }
+# embassy-rp-plus = { path = "../embassy-rp-plus", optional = true }
+embassy-rp-plus = { version = "0.1.1", optional = true }
+embassy-sync = "0.7.0"
 
 [features]
 rp = ["embassy-rp-plus"]
+# this is for compilation and document generation. It is not recommended to use
 _rp2040 = ["embassy-rp-plus/rp2040"]
+
+[package.metadata.docs.rs]
+features = ["_rp2040"]
