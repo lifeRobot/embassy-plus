@@ -52,7 +52,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
 
     /// run tcp client<br />
     /// calling this method causes tcp to maintain a long connection and send data asynchronously over WriteChannel
-    pub async fn run<const CH_N: usize>(&self, wch: &WriteChannel<'_, CH_N>) {
+    pub async fn run<const CH_N: usize>(&mut self, wch: &WriteChannel<'_, CH_N>) {
         loop {
             self.run_logic(wch).await;
             self.cb.dis_conn().await;
@@ -60,7 +60,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
     }
 
     /// run logic
-    async fn run_logic<const CH_N: usize>(&self, wch: &WriteChannel<'_, CH_N>) {
+    async fn run_logic<const CH_N: usize>(&mut self, wch: &WriteChannel<'_, CH_N>) {
         // wait stack link and config up
         self.stack.wait_link_up().await;
         self.stack.wait_config_up().await;
@@ -80,7 +80,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
     }
 
     /// read tcp data logic
-    async fn read_logic<const CH_N: usize>(&self, conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>, wch: &WriteChannel<'_, CH_N>) -> bool {
+    async fn read_logic<const CH_N: usize>(&mut self, conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>, wch: &WriteChannel<'_, CH_N>) -> bool {
         if !conn.socket.can_recv() {
             if let Err(e) = self.write_logic(conn, wch).await { self.cb.err(e).await }
             return matches!(conn.socket.state(), State::CloseWait|State::Closed);
