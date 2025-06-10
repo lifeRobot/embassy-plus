@@ -1,3 +1,6 @@
+use embassy_net::{IpAddress, IpEndpoint};
+use crate::channel::callback_enum::CallbackEnum;
+
 /// socket msg
 #[derive(Copy, Clone)]
 pub struct SocketMsg<const N: usize> {
@@ -5,6 +8,11 @@ pub struct SocketMsg<const N: usize> {
     pub(crate) bytes: [u8; N],
     /// real send bytes len
     pub(crate) len: usize,
+    /// read channel logic enum
+    pub(crate) callback_enum: CallbackEnum,
+    /// ip addr, tcp server need this attribute<br />
+    /// default is 0.0.0.0:0, if this happens, please consider it invalid ip
+    pub(crate) endpoint: IpEndpoint,
 }
 
 /// support default
@@ -20,7 +28,7 @@ impl<const N: usize> SocketMsg<N> {
     /// create socket msg
     #[inline]
     pub const fn new(bytes: [u8; N], len: usize) -> Self {
-        Self { bytes, len }
+        Self { bytes, len, callback_enum: CallbackEnum::Disconnect, endpoint: IpEndpoint::new(IpAddress::v4(0, 0, 0, 0), 0) }
     }
 
     /// get real bytes data

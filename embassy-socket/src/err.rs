@@ -5,7 +5,7 @@ use embassy_sync::channel::TryReceiveError;
 pub type SocketResult<T> = Result<T, SocketErr>;
 
 /// socket error
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum SocketErr {
     /// tcp error
     TcpError(tcp::Error),

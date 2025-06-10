@@ -7,29 +7,9 @@ use crate::channel::write_channel::WriteChannel;
 use crate::connection::socket_state::SocketState;
 use crate::connection::TcpConnection;
 use crate::err::SocketResult;
-use crate::tcp_client::callback::TcpClientCallBack;
-use crate::tcp_client::callback_runner::CallbackRunner;
-use crate::tcp_client::read_runner::ReadRunner;
 
-pub mod callback;
-pub mod read_runner;
-pub mod callback_runner;
-
-/// build tcp client runner
-#[inline]
-pub fn build<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, const RC_SZ: usize, CB: TcpClientCallBack>(
-    stack: Stack<'d>,
-    ip: Ipv4Addr,
-    port: u16,
-    channel: &'d ReadChannel<'d, RC_SZ>,
-    state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>,
-    cb: CB)
-    -> (ReadRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, RC_SZ>, CallbackRunner<'d, RC_SZ, CB>) {
-    (ReadRunner::new(stack, ip, port, channel, state), CallbackRunner::new(channel, cb))
-}
-
-/// tcp client
-pub struct TcpClient<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpClientCallBack> {
+/// tcp client read runner
+pub struct ReadRunner<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, const RC_SZ: usize> {
     /// tcp stack
     stack: Stack<'d>,
     /// socket state, memory pool
@@ -42,19 +22,22 @@ pub struct TcpClient<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize,
     ip: Ipv4Addr,
     /// tcp client connection port
     port: u16,
-    /// tcp client callback
-    cb: CB,
+    /// channel
+    channel: &'d ReadChannel<'d, RC_SZ>,
 }
 
 /// custom method
-impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, CB: TcpClientCallBack> TcpClient<'d, N, TX_SZ, RX_SZ, BUF_SIZE, CB> {
-    /// create tcp client
+impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize, const RC_SZ: usize>
+ReadRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, RC_SZ> {
+    /// create tcp client read runner
     #[inline]
-    #[deprecated(
-        note = "please use [tcp_client::build], [tcp_client::build] provides a better caching strategy to effectively reduce the problem of dropping data due to too much data in write_channel"
-    )]
-    pub fn new(stack: Stack<'d>, ip: Ipv4Addr, port: u16, cb: CB, state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>) -> Self {
-        Self { stack, state, socket_timeout: None, read_timeout: Duration::from_millis(100), ip, port, cb }
+    pub fn new(
+        stack: Stack<'d>,
+        ip: Ipv4Addr,
+        port: u16,
+        channel: &'d ReadChannel<'d, RC_SZ>,
+        state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>) -> Self {
+        Self { stack, state, socket_timeout: None, read_timeout: Duration::from_millis(100), ip, port, channel }
     }
 
     /// set socket timeout<br />
@@ -73,15 +56,15 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
 
     /// run tcp client<br />
     /// calling this method causes tcp to maintain a long connection and send data asynchronously over WriteChannel
-    pub async fn run<const CH_N: usize>(&mut self, wch: &WriteChannel<'_, CH_N>) {
+    pub async fn run<const CH_N: usize>(&self, wch: &WriteChannel<'_, CH_N>) {
         loop {
             self.run_logic(wch).await;
-            self.cb.dis_conn().await;
+            self.channel.dis_conn().await;
         }
     }
 
     /// run logic
-    async fn run_logic<const CH_N: usize>(&mut self, wch: &WriteChannel<'_, CH_N>) {
+    async fn run_logic<const CH_N: usize>(&self, wch: &WriteChannel<'_, CH_N>) {
         // wait stack link and config up
         self.stack.wait_link_up().await;
         self.stack.wait_config_up().await;
@@ -89,31 +72,36 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
         let mut conn = match self.try_conn().await {
             Ok(conn) => conn,
             Err(e) => {
-                self.cb.err(e).await;
+                self.channel.err(e).await;
                 return;
             }
         };
 
         wch.enable().await;
-        self.cb.conn().await;
+        self.channel.conn().await;
         while !self.read_logic(&mut conn, wch).await {}
         wch.disable().await;
     }
 
     /// read tcp data logic
-    async fn read_logic<const CH_N: usize>(&mut self, conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>, wch: &WriteChannel<'_, CH_N>) -> bool {
+    async fn read_logic<const CH_N: usize>(
+        &self,
+        conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>,
+        wch: &WriteChannel<'_, CH_N>) -> bool {
         if !conn.socket.can_recv() {
-            if let Err(e) = self.write_logic(conn, wch).await { self.cb.err(e).await }
+            if let Err(e) = self.write_logic(conn, wch).await { self.channel.err(e).await }
             return matches!(conn.socket.state(), State::CloseWait|State::Closed);
         }
 
         match conn.try_read().await {
             Ok(bytes) => {
-                self.cb.recv(bytes).await;
+                // if channel is full, ignore data
+                if self.channel.is_full().await { return false; }
+                self.channel.recv(bytes).await;
                 false
             }
             Err(e) => {
-                self.cb.err(e.into()).await;
+                self.channel.err(e.into()).await;
                 true
             }
         }

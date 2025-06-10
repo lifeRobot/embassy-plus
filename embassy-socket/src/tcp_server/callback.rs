@@ -1,5 +1,5 @@
 use embassy_net::IpEndpoint;
-use crate::channel::WriteChannel;
+use crate::channel::write_channel::WriteChannel;
 use crate::err::SocketErr;
 
 /// tcp server callback

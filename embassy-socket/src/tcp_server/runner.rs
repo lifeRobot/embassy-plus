@@ -1,7 +1,7 @@
 use embassy_net::{IpEndpoint, Stack};
 use embassy_net::tcp::State;
 use embassy_time::{Duration, Timer};
-use crate::channel::WriteChannel;
+use crate::channel::write_channel::WriteChannel;
 use crate::connection::socket_state::SocketState;
 use crate::connection::TcpConnection;
 use crate::err::{SocketErr, SocketResult};
