@@ -4,7 +4,7 @@ use crate::channel::read_channel::ReadChannel;
 use crate::channel::socket_msg::SocketMsg;
 use crate::tcp_client::callback::TcpClientCallBack;
 
-/// tcp client write runner
+/// tcp client callback runner
 pub struct CallbackRunner<'d, const RC_SZ: usize, CB: TcpClientCallBack> {
     /// channel
     channel: &'d ReadChannel<'d, RC_SZ>,
@@ -46,10 +46,10 @@ impl<'d, const RC_SZ: usize, CB: TcpClientCallBack> CallbackRunner<'d, RC_SZ, CB
 
         self.channel.read(&mut self.socket_msg).await;
         match self.socket_msg.callback_enum {
-            CallbackEnum::Conn => { self.cb.conn().await }
-            CallbackEnum::Disconnect => { self.cb.dis_conn().await }
-            CallbackEnum::Recv => { self.cb.recv(self.socket_msg.as_bytes()).await; }
-            CallbackEnum::Err(e) => { self.cb.err(e).await; }
+            CallbackEnum::Conn => self.cb.conn().await,
+            CallbackEnum::Disconnect => self.cb.dis_conn().await,
+            CallbackEnum::Recv => self.cb.recv(self.socket_msg.as_bytes()).await,
+            CallbackEnum::Err(e) => self.cb.err(e).await,
         }
     }
 }
