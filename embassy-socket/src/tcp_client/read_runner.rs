@@ -55,11 +55,9 @@ ReadRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, RC_SZ, WC_SZ> {
 
     /// run tcp client<br />
     /// calling this method causes tcp to maintain a long connection and send data asynchronously over WriteChannel
+    #[inline]
     pub async fn run(&self) {
-        loop {
-            self.run_logic().await;
-            self.socket_channel.read_channel.dis_conn().await;
-        }
+        loop { self.run_logic().await; }
     }
 
     /// run logic
@@ -80,6 +78,7 @@ ReadRunner<'d, N, TX_SZ, RX_SZ, BUF_SIZE, RC_SZ, WC_SZ> {
         self.socket_channel.read_channel.conn().await;
         while !self.read_logic(&mut conn).await {}
         self.socket_channel.write_channel.disable().await;
+        self.socket_channel.read_channel.dis_conn().await;
     }
 
     /// read tcp data logic

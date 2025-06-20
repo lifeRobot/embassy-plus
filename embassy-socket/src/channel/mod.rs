@@ -6,7 +6,7 @@ pub(crate) mod lock_channel;
 pub mod write_channel;
 pub mod read_channel;
 pub mod socket_msg;
-pub(crate) mod callback_enum;
+pub mod callback_enum;
 
 /// socket channel
 pub struct SocketChannel<'d, const RC_SZ: usize, const WC_SZ: usize> {

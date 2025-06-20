@@ -9,10 +9,10 @@ pub struct SocketMsg<const N: usize> {
     /// real send bytes len
     pub(crate) len: usize,
     /// read channel logic enum
-    pub(crate) callback_enum: CallbackEnum,
+    pub callback_enum: CallbackEnum,
     /// ip addr, tcp server need this attribute<br />
     /// default is 0.0.0.0:0, if this happens, please consider it invalid ip
-    pub(crate) endpoint: IpEndpoint,
+    pub endpoint: IpEndpoint,
 }
 
 /// support default
