@@ -58,7 +58,7 @@ Cargo.toml file :
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
 embassy-rp-plus = { version = "0.1.1", features = ["rp2040", "usb_log"] }
 embassy-socket = { version = "0.1.2" }
-static_cell = "2.1.0"
+static_cell = "2.1.1"
 portable-atomic = { version = "1.11.0", features = ["critical-section"] }
 rand_core = { version = "0.6.4", default-features = false }
 embassy-net-wiznet = "0.2.0"
