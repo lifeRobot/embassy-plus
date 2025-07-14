@@ -102,4 +102,16 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
         socket_msg.callback_enum = msg.callback_enum;
         recv.receive_done();
     }
+
+    /// read data and addr
+    pub async fn read_addr(&self, socket_msg: &mut SocketMsg<N>) {
+        let mut ch = self.channel.channel.lock().await;
+        let mut recv = ch.split().1;
+        let msg = recv.receive().await;
+        socket_msg.bytes.copy_from_slice(&msg.bytes);
+        socket_msg.len = msg.len;
+        socket_msg.callback_enum = msg.callback_enum;
+        socket_msg.endpoint = msg.endpoint;
+        recv.receive_done();
+    }
 }

@@ -40,6 +40,12 @@ impl<'d, const N: usize> WriteChannel<'d, N> {
         self.channel.is_empty().await
     }
 
+    /// channel is full
+    #[inline]
+    pub async fn is_full(&self) -> bool {
+        self.channel.is_full().await
+    }
+
     /// try tcp write data
     pub async fn try_tcp_write<const CN: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE: usize>(
         &self,

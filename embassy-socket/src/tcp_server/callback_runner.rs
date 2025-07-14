@@ -44,7 +44,7 @@ impl<'d, const RC_SZ: usize, const WC_SZ: usize, CB: TcpServerCallBack> Callback
             return;
         }
 
-        self.socket_channel.read_channel.read(&mut self.socket_msg).await;
+        self.socket_channel.read_channel.read_addr(&mut self.socket_msg).await;
         match self.socket_msg.callback_enum {
             CallbackEnum::Conn => self.cb.conn(self.socket_msg.endpoint, &self.socket_channel.write_channel, t).await,
             CallbackEnum::Disconnect => self.cb.dis_conn(self.socket_msg.endpoint, t).await,

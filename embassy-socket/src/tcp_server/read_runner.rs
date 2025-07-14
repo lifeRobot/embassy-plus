@@ -16,6 +16,9 @@ pub struct ReadRunner<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize
     port: u16,
     /// socket timeout
     socket_timeout: Option<Duration>,
+    /// socket keep alive<br />
+    /// more see [embassy_net::tcp::TcpSocket::set_keep_alive]
+    keep_alive: Option<Duration>,
     /// read data timeout, default is 100 milliseconds
     read_timeout: Duration,
     /// socket channel
@@ -27,15 +30,23 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
     /// create one read runner
     #[inline]
     pub fn new(stack: Stack<'d>, state: &'d SocketState<N, TX_SZ, RX_SZ, BUF_SIZE>, port: u16, socket_channel: &'d SocketChannel<'d, RC_SZ, WC_SZ>) -> Self {
-        Self { stack, state, port, socket_timeout: None, read_timeout: Duration::from_millis(100), socket_channel }
+        Self {
+            stack,
+            state,
+            port,
+            socket_timeout: Some(Duration::from_secs(1)),
+            keep_alive: Some(Duration::from_millis(300)),
+            read_timeout: Duration::from_millis(100),
+            socket_channel,
+        }
     }
 
     /// set socket timeout<br />
     /// connection timeout and etc. <br />
-    /// tt is recommended not to set or set to None
-    #[inline]
+    /// recommended not to set or set to None
     pub fn socket_timeout(&mut self, timeout: Option<Duration>) {
         self.socket_timeout = timeout;
+        self.keep_alive = timeout.map(|timeout| timeout.checked_div(10)).unwrap_or_default();
     }
 
     /// set read timeout
@@ -87,6 +98,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
 
     /// write logic
     async fn write_logic(&self, conn: &mut TcpConnection<'d, N, TX_SZ, RX_SZ, BUF_SIZE>) -> SocketResult<()> {
+        // if channel is empty, just sleep and return let continue
         if self.socket_channel.write_channel.is_empty().await {
             Timer::after(self.read_timeout).await;
             return Ok(());
@@ -103,6 +115,7 @@ impl<'d, const N: usize, const TX_SZ: usize, const RX_SZ: usize, const BUF_SIZE:
 
         let mut conn = TcpConnection::new(self.stack, self.state)?;
         conn.socket.set_timeout(self.socket_timeout);
+        conn.socket.set_keep_alive(self.keep_alive);
         conn.socket.accept(self.port).await?;
         Ok(conn)
     }
