@@ -1,7 +1,8 @@
+use embassy_hal_internal::Peri;
 use embassy_rp::gpio::{Flex, Input, Level, Output, Pin, Pull};
 
 /// gpio trait
-pub trait GpioTrait<'d>: Pin {
+pub trait GpioTrait<'d>: Sized {
     /// Create GPIO input driver, default Pull is [Pull::Up]<br />
     /// more see [Self::input_with_pull] or [Input::new]
     #[inline]
@@ -10,10 +11,7 @@ pub trait GpioTrait<'d>: Pin {
     }
 
     /// Create GPIO input driver, more see [Input::new]
-    #[inline]
-    fn input_with_pull(self, pull: Pull) -> Input<'d> {
-        Input::new(self, pull)
-    }
+    fn input_with_pull(self, pull: Pull) -> Input<'d>;
 
     /// Create GPIO output driver, default level is [Level::High]<br />
     /// more see [Self::output_with_level] or [Output::new]
@@ -23,17 +21,26 @@ pub trait GpioTrait<'d>: Pin {
     }
 
     /// Create GPIO output driver, more see [Output::new]
+    fn output_with_level(self, level: Level) -> Output<'d>;
+
+    /// Create GPIO flex driver, more see [Flex::new]
+    fn flex(self) -> Flex<'d>;
+}
+
+/// any pin support gpio trait
+impl<'d,T: Pin> GpioTrait<'d> for Peri<'d,T> {
+    #[inline]
+    fn input_with_pull(self, pull: Pull) -> Input<'d> {
+        Input::new(self, pull)
+    }
+
     #[inline]
     fn output_with_level(self, level: Level) -> Output<'d> {
         Output::new(self, level)
     }
 
-    /// Create GPIO flex driver, more see [Flex::new]
     #[inline]
     fn flex(self) -> Flex<'d> {
         Flex::new(self)
     }
 }
-
-/// any pin support gpio trait
-impl<T: Pin> GpioTrait<'_> for T {}

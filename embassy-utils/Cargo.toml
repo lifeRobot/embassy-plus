@@ -12,10 +12,10 @@ repository = "https://github.com/lifeRobot/embassy-plus/tree/main/embassy-utils"
 [dependencies]
 embassy-rp-plus = { path = "../embassy-rp-plus", optional = true }
 # embassy-rp-plus = { version = "0.1.1", optional = true }
-embassy-sync = "0.7.0"
+embassy-sync = { version = "0.7.1", optional = true }
 
 [features]
-rp = ["embassy-rp-plus"]
+rp = ["embassy-rp-plus", "embassy-sync"]
 # this is for compilation and document generation. It is not recommended to use
 _rp2040 = ["embassy-rp-plus/rp2040"]
 

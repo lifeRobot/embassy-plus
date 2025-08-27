@@ -1,6 +1,7 @@
 #![no_std]
 
 // re export
+#[cfg(feature = "embassy-sync")]
 pub use embassy_sync;
 #[cfg(feature = "embassy-rp-plus")]
 pub use embassy_rp_plus;

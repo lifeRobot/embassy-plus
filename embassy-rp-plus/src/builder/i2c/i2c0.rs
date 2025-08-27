@@ -1,3 +1,4 @@
+use embassy_hal_internal::Peri;
 use embassy_rp::bind_interrupts;
 use embassy_rp::i2c::{Async, Config, I2c, InterruptHandler};
 use embassy_rp::peripherals::{I2C0, PIN_20, PIN_21};
@@ -7,28 +8,28 @@ bind_interrupts!(struct Irqs {
 });
 
 /// i2c1 builder
-pub struct I2c0Builder {
+pub struct I2c0Builder<'d> {
     /// ic21 device
-    pub i2c0: I2C0,
+    pub i2c0: Peri<'d, I2C0>,
     /// scl pin
-    pub scl: PIN_21,
+    pub scl: Peri<'d, PIN_21>,
     /// sda pin
-    pub sda: PIN_20,
+    pub sda: Peri<'d, PIN_20>,
     /// i2c config
     pub config: Config,
 }
 
 /// custom method
-impl I2c0Builder {
+impl<'d> I2c0Builder<'d> {
     /// create i2c1 builder
     #[inline]
-    pub fn new(i2c0: I2C0, scl: PIN_21, sda: PIN_20) -> Self {
+    pub fn new(i2c0: Peri<'d, I2C0>, scl: Peri<'d, PIN_21>, sda: Peri<'d, PIN_20>) -> Self {
         Self { i2c0, scl, sda, config: Config::default() }
     }
 
     /// build i2c device
     #[inline]
-    pub fn build(self) -> I2c<'static, I2C0, Async> {
+    pub fn build(self) -> I2c<'d, I2C0, Async> {
         I2c::new_async(self.i2c0, self.scl, self.sda, Irqs, self.config)
     }
 }
