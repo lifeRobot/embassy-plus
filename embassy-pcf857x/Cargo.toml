@@ -10,8 +10,8 @@ categories = ["embedded"]
 repository = "https://github.com/lifeRobot/embassy-plus/tree/main/embassy-pcf857x"
 
 [dependencies]
-embassy-rp = { version = "0.7.0", optional = true }
-embassy-sync = "0.7.1"
+embassy-rp = { version = "0.8.0", optional = true }
+embassy-sync = "0.7.2"
 
 [features]
 rp = ["embassy-rp"]

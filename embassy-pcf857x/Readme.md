@@ -60,7 +60,7 @@ Cargo.toml file :
 embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] } 
 embassy-rp-plus = { version = "0.1.0", features = ["rp2040", "usb_log"] }
 embassy-pcf857x = { version = "0.1.0", features = ["rp"] }
-embassy-time = { version = "0.4.0" }
+embassy-time = { version = "0.5.0" }
 
 cortex-m-rt = "0.7.5"
 defmt-rtt = "1.0.0"

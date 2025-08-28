@@ -61,7 +61,7 @@ embassy-socket = { version = "0.1.2" }
 static_cell = "2.1.1"
 portable-atomic = { version = "1.11.0", features = ["critical-section"] }
 rand_core = { version = "0.6.4", default-features = false }
-embassy-net-wiznet = "0.2.0"
+embassy-net-wiznet = "0.2.1"
 embedded-hal-bus = { version = "0.3.0", features = ["async"] }
 
 cortex-m-rt = "0.7.5"

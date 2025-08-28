@@ -6,6 +6,8 @@ use crate::pcf8575::pcf8575_pin::Pcf8575Pin;
 pub mod pcf8575_pin;
 
 /// pcf8575
+/// TODO pcf8575 needs to be rewritten, i2c does not need to lock, address is directly changed to external self-definition, and it is no longer stored here
+// #[deprecated(note = "api may change, please use caution")]
 pub struct PCF8575<'a, T: Instance, M: Mode> {
     /// i2c lock
     i2c: &'a I2cLock<'a, T, M>,
