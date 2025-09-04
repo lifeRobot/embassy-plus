@@ -40,7 +40,7 @@ Cargo.toml file :
 
 ```toml
 embassy-stm32-plus = { version = "0.2.1", features = ["stm32f103rc", "exti"] }
-embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
+embassy-executor = { version = "0.9.1", features = ["arch-cortex-m", "executor-thread"] }
 
 cortex-m-rt = "0.7.5"
 defmt = "0.3.10"
@@ -113,7 +113,7 @@ Cargo.toml:
 
 ```toml
 embassy-stm32-plus = { version = "0.2.1", features = ["stm32f103rc", "exti"] }
-embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
+embassy-executor = { version = "0.9.1", features = ["arch-cortex-m", "executor-thread"] }
 embassy-time = "0.5.0"
 
 cortex-m-rt = "0.7.5"

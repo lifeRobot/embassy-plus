@@ -56,7 +56,7 @@ fn main() {
 Cargo.toml file :
 
 ```toml
-embassy-executor = { version = "0.7.0", features = ["arch-cortex-m", "executor-thread"] }
+embassy-executor = { version = "0.9.1", features = ["arch-cortex-m", "executor-thread"] }
 embassy-rp-plus = { version = "0.1.1", features = ["rp2040", "usb_log"] }
 embassy-utils = { version = "0.1.0", features = ["rp"] }
 embassy-time = "0.5.0"
