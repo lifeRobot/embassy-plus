@@ -52,8 +52,15 @@ impl<'a, T: Instance, M: Mode> PCF8575<'a, T, M> {
     }
 
     /// write all gpio
+    #[inline]
     pub async fn write_gpio(&mut self, gpio: u16) {
-        self.write_buf = gpio.to_be_bytes();
+        self.write_buf(gpio.to_be_bytes()).await;
+    }
+
+    /// write all buf<br />
+    /// more see [Self::write_gpio]
+    pub async fn write_buf(&mut self, buf: [u8; 2]) {
+        self.write_buf = buf;
         self.i2c.blocking_write(self.address, &self.write_buf).await.ok();
     }
 

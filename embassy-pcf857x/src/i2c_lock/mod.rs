@@ -1,4 +1,4 @@
-use embassy_rp::i2c::{Error, I2c, Instance, Mode};
+use embassy_rp::i2c::{Async, Error, I2c, Instance, Mode};
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
 use embassy_sync::mutex::Mutex;
 use crate::pcf8575::PCF8575;
@@ -42,5 +42,30 @@ impl<'a, T: Instance, M: Mode> I2cLock<'a, T, M> {
     #[inline]
     pub async fn blocking_write(&self, address: impl Into<u16>, write: &[u8]) -> Result<(), Error> {
         self.i2c.lock().await.blocking_write(address, write)
+    }
+}
+
+/// custom method
+impl<'a, T: Instance> I2cLock<'a, T, Async> {
+    /// Write to address from buffer asynchronously.
+    #[inline]
+    pub async fn write_async(&self, address: impl Into<u16>, bytes: impl IntoIterator<Item=u8>) -> Result<(), Error> {
+        self.i2c.lock().await.write_async(address, bytes).await
+    }
+
+    /// Read from address into buffer asynchronously.
+    #[inline]
+    pub async fn read_async(&self, address: impl Into<u16>, bytes: &mut [u8]) -> Result<(), Error> {
+        self.i2c.lock().await.read_async(address, bytes).await
+    }
+
+    /// Write to address from bytes and read from address into buffer asynchronously.
+    #[inline]
+    pub async fn write_read_async(
+        &self,
+        addr: impl Into<u16>,
+        bytes: impl IntoIterator<Item=u8>,
+        buffer: &mut [u8]) -> Result<(), Error> {
+        self.i2c.lock().await.write_read_async(addr, bytes, buffer).await
     }
 }
