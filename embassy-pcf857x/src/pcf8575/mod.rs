@@ -15,6 +15,10 @@ pub struct PCF8575<'a, T: Instance, M: Mode> {
     address: u8,
     /// read buf
     write_buf: [u8; 2],
+    /// if true, use big endian<br />
+    /// if false, use little endian<br />
+    /// default is big endian
+    pub big_endian: bool,
     /// read buf
     pub read_buf: [u8; 2],
 }
@@ -24,7 +28,28 @@ impl<'a, T: Instance, M: Mode> PCF8575<'a, T, M> {
     /// create pcf8575
     #[inline]
     pub const fn new(i2c: &'a I2cLock<'a, T, M>, address: u8) -> Self {
-        Self { i2c, address, write_buf: [0; 2], read_buf: [0; 2] }
+        Self { i2c, address, big_endian: true, write_buf: [0; 2], read_buf: [0; 2] }
+    }
+
+    /// use big endian
+    #[inline]
+    pub const fn set_big_endian(&mut self) {
+        self.big_endian = true;
+    }
+
+    /// use little endian
+    #[inline]
+    pub const fn set_little_endian(&mut self) {
+        self.big_endian = false;
+    }
+
+    /// change big endian<br />
+    /// if true, use big endian
+    /// if false, use little endian
+    #[inline]
+    pub const fn big_endian(mut self, big_endian: bool) -> Self {
+        self.big_endian = big_endian;
+        self
     }
 
     /// create default address pcf8575, default address is 0x20
@@ -42,7 +67,11 @@ impl<'a, T: Instance, M: Mode> PCF8575<'a, T, M> {
     /// read all gpio
     pub async fn read_gpio(&mut self) -> u16 {
         self.read_to_buf().await;
-        u16::from_le_bytes(self.read_buf)
+        if self.big_endian {
+            u16::from_be_bytes(self.read_buf)
+        } else {
+            u16::from_le_bytes(self.read_buf)
+        }
     }
 
     /// read pin level
@@ -54,26 +83,38 @@ impl<'a, T: Instance, M: Mode> PCF8575<'a, T, M> {
     /// write all gpio
     #[inline]
     pub async fn write_gpio(&mut self, gpio: u16) {
-        self.write_buf(gpio.to_be_bytes()).await;
+        let buf = if self.big_endian { gpio.to_be_bytes() } else { gpio.to_le_bytes() };
+        self.write_buf(buf).await;
     }
 
     /// write all buf<br />
     /// more see [Self::write_gpio]
     pub async fn write_buf(&mut self, buf: [u8; 2]) {
         self.write_buf = buf;
+        self.re_write().await;
+    }
+
+    /// re-write all buf to i2c
+    #[inline]
+    pub async fn re_write(&self) {
         self.i2c.blocking_write(self.address, &self.write_buf).await.ok();
     }
 
-    /// write one pin io
-    pub async fn write_pin(&mut self, pin: Pcf8575Pin, val: Level) {
-        let bytes = u16::from_be_bytes(self.write_buf);
-        let p = 1 << pin.to_u8();
-        let bytes = match val {
-            Level::High => { bytes | p }
-            Level::Low => { bytes & !p }
-        };
+    /// just set up the cache, no data will be written to i2c<br />
+    /// if you need to write cached data to i2c, call[Self::re_write]
+    pub fn set_pin(&mut self, pin: Pcf8575Pin, level: Level) {
+        let (i, p) = pin.to_index_u8(self.big_endian);
+        match level {
+            Level::High => { self.write_buf[i] |= 1 << p; }
+            Level::Low => { self.write_buf[i] &= !(1 << p); }
+        }
+    }
 
-        self.write_gpio(bytes).await;
+    /// write one pin io
+    #[inline]
+    pub async fn write_pin(&mut self, pin: Pcf8575Pin, val: Level) {
+        self.set_pin(pin, val);
+        self.re_write().await;
     }
 
     /// write all pin to low
@@ -90,35 +131,31 @@ impl<'a, T: Instance, M: Mode> PCF8575<'a, T, M> {
 
     /// write pins level
     pub async fn write_pins(&mut self, pins: &[(Pcf8575Pin, Level)]) {
-        let mut bytes = u16::from_be_bytes(self.write_buf);
         for (pin, level) in pins {
-            let p = 1 << pin.to_u8();
-            match level {
-                Level::High => { bytes |= p }
-                Level::Low => { bytes &= !p }
-            }
+            self.set_pin(*pin, *level);
         }
 
-        self.write_gpio(bytes).await;
+        self.re_write().await;
     }
 
     /// write pins to low
     pub async fn write_pins_low(&mut self, pins: &[Pcf8575Pin]) {
-        let mut bytes = u16::from_be_bytes(self.write_buf);
         for pin in pins {
-            bytes &= !(1 << pin.to_u8());
+            let (i, p) = pin.to_index_u8(self.big_endian);
+            self.write_buf[i] &= !(1 << p);
         }
 
-        self.write_gpio(bytes).await;
+        self.re_write().await;
     }
 
     /// write pins to high
     pub async fn write_pins_high(&mut self, pins: &[Pcf8575Pin]) {
-        let mut bytes = u16::from_be_bytes(self.write_buf);
         for pin in pins {
-            bytes |= 1 << pin.to_u8();
+            let (i, p) = pin.to_index_u8(self.big_endian);
+            self.write_buf[i] |= 1 << p;
         }
 
-        self.write_gpio(bytes).await;
+        // self.write_gpio(bytes).await;
+        self.re_write().await;
     }
 }
