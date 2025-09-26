@@ -33,7 +33,7 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
 
     /// change callback logic and addr
     pub(crate) async fn callback_logic_addr(&self, callback_enum: CallbackEnum, endpoint: IpEndpoint) {
-        let mut ch = self.channel.channel.lock().await;
+        let mut ch = self.channel.channel.write().await;
         let mut send = ch.split().0;
         let socket_msg = send.send().await;
         socket_msg.callback_enum = callback_enum;
@@ -43,7 +43,7 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
 
     /// change callback logic
     pub(crate) async fn callback_logic(&self, callback_enum: CallbackEnum) {
-        let mut ch = self.channel.channel.lock().await;
+        let mut ch = self.channel.channel.write().await;
         let mut send = ch.split().0;
         let socket_msg = send.send().await;
         socket_msg.callback_enum = callback_enum;
@@ -94,7 +94,7 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
 
     /// read data
     pub async fn read(&self, socket_msg: &mut SocketMsg<N>) {
-        let mut ch = self.channel.channel.lock().await;
+        let mut ch = self.channel.channel.write().await;
         let mut recv = ch.split().1;
         let msg = recv.receive().await;
         socket_msg.bytes.copy_from_slice(&msg.bytes);
@@ -105,7 +105,7 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
 
     /// read data and addr
     pub async fn read_addr(&self, socket_msg: &mut SocketMsg<N>) {
-        let mut ch = self.channel.channel.lock().await;
+        let mut ch = self.channel.channel.write().await;
         let mut recv = ch.split().1;
         let msg = recv.receive().await;
         socket_msg.bytes.copy_from_slice(&msg.bytes);

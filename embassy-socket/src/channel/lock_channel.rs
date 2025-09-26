@@ -1,6 +1,6 @@
 use embassy_net::IpEndpoint;
 use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
-use embassy_sync::mutex::Mutex;
+use embassy_sync::rwlock::RwLock;
 use embassy_sync::zerocopy_channel::Channel;
 use crate::channel::callback_enum::CallbackEnum;
 use crate::channel::socket_msg::SocketMsg;
@@ -9,7 +9,7 @@ use crate::channel::socket_msg::SocketMsg;
 /// N is channel bytes len
 pub struct LockChannel<'d, const N: usize> {
     /// channel
-    pub channel: Mutex<CriticalSectionRawMutex, Channel<'d, CriticalSectionRawMutex, SocketMsg<N>>>,
+    pub channel: RwLock<CriticalSectionRawMutex, Channel<'d, CriticalSectionRawMutex, SocketMsg<N>>>,
 }
 
 /// custom method
@@ -17,25 +17,25 @@ impl<'d, const N: usize> LockChannel<'d, N> {
     /// create read channel
     #[inline]
     pub fn new(buf: &'d mut [SocketMsg<N>]) -> Self {
-        Self { channel: Mutex::new(Channel::new(buf)) }
+        Self { channel: RwLock::new(Channel::new(buf)) }
     }
 
     /// channel is empty
     #[inline]
     pub async fn is_empty(&self) -> bool {
-        self.channel.lock().await.is_empty()
+        self.channel.read().await.is_empty()
     }
 
     /// channel is full
     #[inline]
     pub async fn is_full(&self) -> bool {
-        self.channel.lock().await.is_full()
+        self.channel.read().await.is_full()
     }
 
     /// clear channel
     #[inline]
     pub async fn clear(&self) {
-        self.channel.lock().await.clear();
+        self.channel.write().await.clear();
     }
 
     /// send bytes data and set callback logic
@@ -44,7 +44,7 @@ impl<'d, const N: usize> LockChannel<'d, N> {
         let mut bytes_iter = bytes.chunks_exact(N);
         for byte in bytes_iter.by_ref() {
             // if full stop send, if send will be stop task
-            let mut ch = self.channel.lock().await;
+            let mut ch = self.channel.write().await;
             if ch.is_full() { return; }
 
             let mut sender = ch.split().0;
@@ -63,7 +63,7 @@ impl<'d, const N: usize> LockChannel<'d, N> {
         let byte = bytes_iter.remainder();
         if byte.is_empty() { return; }
         // if full stop send, if send will be stop task
-        let mut ch = self.channel.lock().await;
+        let mut ch = self.channel.write().await;
         if ch.is_full() { return; }
         let mut sender = ch.split().0;
         let msg = sender.send().await;
