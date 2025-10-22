@@ -92,20 +92,23 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
         self.channel.send_bytes(bytes, Some(endpoint)).await
     }
 
-    /// read data
-    pub async fn read(&self, socket_msg: &mut SocketMsg<N>) {
+    /// read data, returns read results, true=success, false=fail
+    pub async fn read(&self, socket_msg: &mut SocketMsg<N>) -> bool {
         let mut ch = self.channel.channel.write().await;
+        // fixed the issue where receive().await may be locked all the time, resulting in the channel being unable to be rewritten
+        if ch.is_empty() { return false; }
         let mut recv = ch.split().1;
         let msg = recv.receive().await;
-        socket_msg.bytes.copy_from_slice(&msg.bytes);
-        socket_msg.len = msg.len;
-        socket_msg.callback_enum = msg.callback_enum;
+        *socket_msg = *msg;
         recv.receive_done();
+        true
     }
 
-    /// read data and addr
-    pub async fn read_addr(&self, socket_msg: &mut SocketMsg<N>) {
+    /// read data and addr, returns read results, true=success, false=fail
+    pub async fn read_addr(&self, socket_msg: &mut SocketMsg<N>) -> bool {
         let mut ch = self.channel.channel.write().await;
+        // fixed the issue where receive().await may be locked all the time, resulting in the channel being unable to be rewritten
+        if ch.is_empty() { return false; }
         let mut recv = ch.split().1;
         let msg = recv.receive().await;
         socket_msg.bytes.copy_from_slice(&msg.bytes);
@@ -113,5 +116,6 @@ impl<'d, const N: usize> ReadChannel<'d, N> {
         socket_msg.callback_enum = msg.callback_enum;
         socket_msg.endpoint = msg.endpoint;
         recv.receive_done();
+        true
     }
 }

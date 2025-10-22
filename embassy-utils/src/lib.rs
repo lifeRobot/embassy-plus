@@ -9,3 +9,4 @@ pub use embassy_rp_plus;
 #[cfg(feature = "embassy-rp-plus")]
 pub mod flash;
 pub mod r#macro;
+pub mod cache;
