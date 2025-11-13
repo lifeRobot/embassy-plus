@@ -15,7 +15,7 @@ impl<const N: usize> BaseCache<N> {
         Self { bytes: [0; N], len: 0 }
     }
 
-    /// 直接通过bytes生成数据
+    /// generate data directly from bytes
     #[inline]
     pub fn from_bytes(bytes: [u8; N]) -> Self {
         Self { bytes, len: N }
@@ -35,14 +35,14 @@ impl<const N: usize> BaseCache<N> {
     /// reset memory and remove invalid bytes to the left <br />
     /// returns whether the invalid cache was removed successfully
     pub fn reset(&mut self, invalid: usize) -> bool {
-        // 长度为0直接退出，长度超过缓存长度，直接清空缓存并退出
+        // if the length is 0, exit directly. if the length exceeds the cache length, the cache is cleared directly and exit.
         if invalid == 0 { return false; }
         if invalid >= self.len {
             self.clear();
             return true;
         }
 
-        // 没有超过缓存，前移有效数据
+        // if the cache is not exceeded, valid data is advanced
         for i in 0..(self.len - invalid) {
             self.bytes[i] = self.bytes[i + invalid];
         }

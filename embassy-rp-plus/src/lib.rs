@@ -10,3 +10,4 @@ pub use log;
 
 pub mod builder;
 pub mod traits;
+mod r#macro;
