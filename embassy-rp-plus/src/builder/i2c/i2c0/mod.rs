@@ -12,9 +12,9 @@ bind_interrupts!(struct Irqs {
     I2C0_IRQ => InterruptHandler<I2C0>;
 });
 
-/// i2c1 builder
+/// i2c0 builder
 pub struct I2c0Builder<'d> {
-    /// ic21 device
+    /// ic20 device
     pub i2c0: Peri<'d, I2C0>,
     /// scl pin
     pub scl: I2c0Scl<'d>,
@@ -26,7 +26,7 @@ pub struct I2c0Builder<'d> {
 
 /// custom method
 impl<'d> I2c0Builder<'d> {
-    /// create i2c1 builder
+    /// create i2c0 builder
     #[inline]
     pub fn new(i2c0: Peri<'d, I2C0>, scl: I2c0Scl<'d>, sda: I2c0Sda<'d>) -> Self {
         Self { i2c0, scl, sda, config: Config::default() }
