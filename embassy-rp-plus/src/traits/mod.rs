@@ -1,7 +1,12 @@
+#[cfg(feature = "adc")]
 pub mod adc;
+#[cfg(feature = "gpio")]
 pub mod gpio;
 pub mod usb;
 pub mod i2c;
+#[cfg(feature = "flash")]
 pub mod flash;
 pub mod uart;
+#[cfg(feature = "pio")]
 pub mod pio;
+pub mod spi;

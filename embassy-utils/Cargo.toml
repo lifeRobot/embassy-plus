@@ -15,9 +15,9 @@ embassy-rp-plus = { path = "../embassy-rp-plus", optional = true }
 embassy-sync = { version = "0.7.2", optional = true }
 
 [features]
-rp = ["embassy-rp-plus", "embassy-sync"]
+rp = ["embassy-rp-plus/flash", "embassy-sync"]
 # this is for compilation and document generation. It is not recommended to use
-_rp2040 = ["embassy-rp-plus/rp2040"]
+_rp2040 = ["embassy-rp-plus/rp2040", "embassy-rp-plus/flash"]
 
 [package.metadata.docs.rs]
 features = ["_rp2040"]
