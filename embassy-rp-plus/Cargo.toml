@@ -36,6 +36,10 @@ spi0 = []
 spi1 = []
 uart0 = []
 uart1 = []
+# general purpose clock inputs
+gp_in = []
+# general purpose clock outputs
+gp_out = []
 usb_log = ["embassy-usb-logger", "log", "embassy-executor"]
 
 [package.metadata.docs.rs]

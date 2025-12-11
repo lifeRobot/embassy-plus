@@ -10,3 +10,5 @@ pub mod uart;
 #[cfg(feature = "pio")]
 pub mod pio;
 pub mod spi;
+pub mod clock;
+pub mod pwm;
