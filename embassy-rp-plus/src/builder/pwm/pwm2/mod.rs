@@ -40,8 +40,8 @@ impl<'d> Pwm2Builder<'d> {
     /// Create PWM driver with a single 'a' pin as output.<br />
     /// more see [Pwm::new_output_a]
     #[inline]
-    pub fn output_a(self, a: Pwm2A<'d>) -> Pwm<'d> {
-        match a {
+    pub fn output_a(self, a: impl Into<Pwm2A<'d>>) -> Pwm<'d> {
+        match a.into() {
             Pwm2A::Pin4(pin_4) => Pwm::new_output_a(self.base.pwm, pin_4, self.base.config.unwrap_or_default()),
             Pwm2A::Pin20(pin_20) => Pwm::new_output_a(self.base.pwm, pin_20, self.base.config.unwrap_or_default()),
         }
@@ -50,8 +50,8 @@ impl<'d> Pwm2Builder<'d> {
     /// Create PWM driver with a single 'b' pin as output.<br />
     /// more see [Pwm::new_output_b]
     #[inline]
-    pub fn output_b(self, b: Pwm2B<'d>) -> Pwm<'d> {
-        match b {
+    pub fn output_b(self, b: impl Into<Pwm2B<'d>>) -> Pwm<'d> {
+        match b.into() {
             Pwm2B::Pin5(pin_5) => Pwm::new_output_b(self.base.pwm, pin_5, self.base.config.unwrap_or_default()),
             Pwm2B::Pin21(pin_21) => Pwm::new_output_b(self.base.pwm, pin_21, self.base.config.unwrap_or_default()),
         }
@@ -60,8 +60,8 @@ impl<'d> Pwm2Builder<'d> {
     /// Create PWM driver with a 'a' and 'b' pins as output.<br />
     /// more see [Pwm::new_output_ab]
     #[inline]
-    pub fn output_ab(self, a: Pwm2A<'d>, b: Pwm2B<'d>) -> Pwm<'d> {
-        match a {
+    pub fn output_ab(self, a: impl Into<Pwm2A<'d>>, b: impl Into<Pwm2B<'d>>) -> Pwm<'d> {
+        match a.into() {
             Pwm2A::Pin4(pin_4) => self.build_b(pin_4, b),
             Pwm2A::Pin20(pin_20) => self.build_b(pin_20, b),
         }
@@ -69,8 +69,8 @@ impl<'d> Pwm2Builder<'d> {
 
     /// build output_ab by b
     #[inline]
-    fn build_b(self, a: Peri<'d, impl ChannelAPin<PWM_SLICE2>>, b: Pwm2B<'d>) -> Pwm<'d> {
-        match b {
+    fn build_b(self, a: Peri<'d, impl ChannelAPin<PWM_SLICE2>>, b: impl Into<Pwm2B<'d>>) -> Pwm<'d> {
+        match b.into() {
             Pwm2B::Pin5(pin_5) => Pwm::new_output_ab(self.base.pwm, a, pin_5, self.base.config.unwrap_or_default()),
             Pwm2B::Pin21(pin_21) => Pwm::new_output_ab(self.base.pwm, a, pin_21, self.base.config.unwrap_or_default()),
         }
@@ -79,8 +79,8 @@ impl<'d> Pwm2Builder<'d> {
     /// Create PWM driver with a single 'b' as input pin.<br />
     /// more see [Pwm::new_input]
     #[inline]
-    pub fn input(self, b: Pwm2B<'d>, pull: Pull, mode: InputMode) -> Pwm<'d> {
-        match b {
+    pub fn input(self, b: impl Into<Pwm2B<'d>>, pull: Pull, mode: InputMode) -> Pwm<'d> {
+        match b.into() {
             Pwm2B::Pin5(pin_5) => Pwm::new_input(self.base.pwm, pin_5, pull, mode, self.base.config.unwrap_or_default()),
             Pwm2B::Pin21(pin_21) => Pwm::new_input(self.base.pwm, pin_21, pull, mode, self.base.config.unwrap_or_default()),
         }
@@ -89,8 +89,8 @@ impl<'d> Pwm2Builder<'d> {
     /// Create PWM driver with a 'a' and 'b' pins in the desired input mode.<br />
     /// more see [Pwm::new_output_input]
     #[inline]
-    pub fn output_input(self, a: Pwm2A<'d>, b: Pwm2B<'d>, pull: Pull, mode: InputMode) -> Pwm<'d> {
-        match a {
+    pub fn output_input(self, a: impl Into<Pwm2A<'d>>, b: impl Into<Pwm2B<'d>>, pull: Pull, mode: InputMode) -> Pwm<'d> {
+        match a.into() {
             Pwm2A::Pin4(pin_4) => self.input_b(pin_4, b, pull, mode),
             Pwm2A::Pin20(pin_20) => self.input_b(pin_20, b, pull, mode),
         }
@@ -98,8 +98,8 @@ impl<'d> Pwm2Builder<'d> {
 
     /// build output_input by b
     #[inline]
-    fn input_b(self, a: Peri<'d, impl ChannelAPin<PWM_SLICE2>>, b: Pwm2B<'d>, pull: Pull, mode: InputMode) -> Pwm<'d> {
-        match b {
+    fn input_b(self, a: Peri<'d, impl ChannelAPin<PWM_SLICE2>>, b: impl Into<Pwm2B<'d>>, pull: Pull, mode: InputMode) -> Pwm<'d> {
+        match b.into() {
             Pwm2B::Pin5(pin_5) => Pwm::new_output_input(self.base.pwm, a, pin_5, pull, mode, self.base.config.unwrap_or_default()),
             Pwm2B::Pin21(pin_21) => Pwm::new_output_input(self.base.pwm, a, pin_21, pull, mode, self.base.config.unwrap_or_default()),
         }

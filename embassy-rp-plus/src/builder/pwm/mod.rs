@@ -1,9 +1,17 @@
+#[cfg(feature = "pwm0")]
 pub mod pwm0;
+#[cfg(feature = "pwm1")]
 pub mod pwm1;
+#[cfg(feature = "pwm2")]
 pub mod pwm2;
+#[cfg(feature = "pwm3")]
 pub mod pwm3;
+#[cfg(feature = "pwm4")]
 pub mod pwm4;
+#[cfg(feature = "pwm5")]
 pub mod pwm5;
+#[cfg(feature = "pwm6")]
 pub mod pwm6;
+#[cfg(feature = "pwm7")]
 pub mod pwm7;
 pub mod base;

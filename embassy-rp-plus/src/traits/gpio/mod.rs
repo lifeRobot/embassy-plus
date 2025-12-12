@@ -24,8 +24,16 @@ pub trait GpioTrait<'d>: Sized {
     fn output_with_level(self, level: Level) -> Output<'d>;
 
     /// Create GPIO output driver for a [Pin] in open drain mode with the provided [Level].<br />
+    /// default level is [Level::High]<br />
     /// more see [OutputOpenDrain::new]
-    fn output_open_drain(self, level: Level) -> OutputOpenDrain<'d>;
+    #[inline]
+    fn output_open_drain(self) -> OutputOpenDrain<'d> {
+        self.output_open_drain_with_level(Level::High)
+    }
+
+    /// Create GPIO output driver for a [Pin] in open drain mode with the provided [Level].<br />
+    /// more see [OutputOpenDrain::new]
+    fn output_open_drain_with_level(self, level: Level) -> OutputOpenDrain<'d>;
 
     /// Create GPIO flex driver, more see [Flex::new]
     fn flex(self) -> Flex<'d>;
@@ -44,7 +52,7 @@ impl<'d, T: Pin> GpioTrait<'d> for Peri<'d, T> {
     }
 
     #[inline]
-    fn output_open_drain(self, level: Level) -> OutputOpenDrain<'d> {
+    fn output_open_drain_with_level(self, level: Level) -> OutputOpenDrain<'d> {
         OutputOpenDrain::new(self, level)
     }
 
