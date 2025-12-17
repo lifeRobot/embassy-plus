@@ -10,7 +10,7 @@ pub mod i2c;
 pub mod flash;
 #[cfg(any(feature = "uart0", feature = "uart1"))]
 pub mod uart;
-#[cfg(feature = "pio")]
+#[cfg(any(feature = "pio0", feature = "pio1"))]
 pub mod pio;
 #[cfg(any(feature = "spi0", feature = "spi1"))]
 pub mod spi;
@@ -27,3 +27,7 @@ pub mod clock;
     feature = "pwm7"
 ))]
 pub mod pwm;
+#[cfg(feature = "rtc")]
+pub mod rtc;
+#[cfg(feature = "watchdog")]
+pub mod watchdog;
